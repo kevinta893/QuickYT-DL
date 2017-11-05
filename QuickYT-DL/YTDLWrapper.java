@@ -128,7 +128,7 @@ public class YTDLWrapper {
 				}
 
 				//get extension
-				Pattern extensionPattern = Pattern.compile("(?![0-9]{1,}[ ]+)[\\w]*(?=[ ]+)");
+				Pattern extensionPattern = Pattern.compile("(?![0-9]{1,}[ ]+)[\\w]+(?=[ ]+)");
 				m = extensionPattern.matcher(f);
 				String extension = "";
 				if (m.find()){
