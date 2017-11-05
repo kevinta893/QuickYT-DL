@@ -2,6 +2,7 @@ import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -25,12 +26,12 @@ public class Main extends JFrame {
 	private JTextField txtURL;
 	private JTable tblFormats;
 
-	private String youtubeDLPath;
+	private YTDLWrapper ytdl;
 	
 	/**
 	 * Launch the application.
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) {		
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
@@ -47,6 +48,9 @@ public class Main extends JFrame {
 	 * Create the frame.
 	 */
 	public Main() {
+		ytdl = new YTDLWrapper();
+		
+		//GUI initialization
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 650, 400);
 		contentPane = new JPanel();
@@ -109,7 +113,7 @@ public class Main extends JFrame {
 
 	
 	private void guiDownloading(boolean b){
-		
+
 	}
 	
 	private void showMessageBoxError(String message){
@@ -122,6 +126,8 @@ public class Main extends JFrame {
 			showMessageBoxError("Invalid youtube URL");
 			return;
 		}
+		
+		List<YTDLWrapper.YTFormat> formats = ytdl.getFormats(url);
 
 		//clear formats table
 		clearTable();
