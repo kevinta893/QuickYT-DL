@@ -24,7 +24,9 @@ public class Main extends JFrame {
 	private JPanel contentPane;
 	private JTextField txtURL;
 	private JTable tblFormats;
-
+	private JButton btnDownload;
+	private JButton btnGetInfo;
+	
 	private YTDLWrapper ytdl;
 	
 	/**
@@ -73,10 +75,10 @@ public class Main extends JFrame {
 		lblYoutubeLink.setBounds(10, 10, 162, 14);
 		contentPane.add(lblYoutubeLink);
 		
-		JButton btnDownload = new JButton("Download");
+		btnDownload = new JButton("Download");
 		btnDownload.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				click_download();
+				clickDownload();
 			}
 		});
 		btnDownload.setBounds(658, 322, 116, 28);
@@ -90,7 +92,7 @@ public class Main extends JFrame {
 		lblProgress.setBounds(10, 297, 141, 14);
 		contentPane.add(lblProgress);
 		
-		JButton btnGetInfo = new JButton("Get Info");
+		btnGetInfo = new JButton("Get Info");
 		btnGetInfo.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				fetchYTInfo(txtURL.getText());
@@ -132,21 +134,41 @@ public class Main extends JFrame {
 
 	}
 
-	private void click_download(){
-		int rowSelected = tblFormats.getSelectedRow();
-		if(rowSelected == -1){
-			//no row selected
-			showMessageBoxError("Select a download format first!");
-			return;
+	private void clickDownload(){
+		if (btnDownload.getText().equals("Download")){
+			//download selected video
+			int rowSelected = tblFormats.getSelectedRow();
+			if(rowSelected == -1){
+				//no row selected
+				showMessageBoxError("Select a download format first!");
+				return;
+			}
+			
+			String formatCode = tblFormats.getValueAt(rowSelected, 0).toString();
+			
+			ytdl.downloadVideo(txtURL.getText(), formatCode);
+			guiDownloading(true);
+		} else{
+			//button is cancel download
+			
 		}
 		
-		int formatCode = Integer.parseInt(tblFormats.getValueAt(rowSelected, 0).toString());
 		
-		System.out.println(formatCode);
 	}
 	
-	private void guiDownloading(boolean b){
-		
+	private void guiDownloading(boolean enabled){
+		if (enabled){
+			btnDownload.setText("Cancel");
+			txtURL.setEnabled(false);
+			btnGetInfo.setEnabled(false);
+			tblFormats.setEnabled(false);
+		}
+		else{
+			btnDownload.setText("Download");
+			txtURL.setEnabled(true);
+			btnGetInfo.setEnabled(true);
+			tblFormats.setEnabled(true);
+		}
 	}
 	
 	private void showMessageBoxError(String message){

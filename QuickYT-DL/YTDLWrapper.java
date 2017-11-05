@@ -170,6 +170,16 @@ public class YTDLWrapper {
 		return ret;
 	}
 
+	//Downloads the video right to the current directory
+	public void downloadVideo(String url, String formatcode){
+		try {
+			startYTDLProcess("-f", formatcode ,"\"" + url +"\"");
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.out.println("Error! Download failed");
+		}
+	}
+	
 
 	public class YTFormat {
 		public int formatCode;
