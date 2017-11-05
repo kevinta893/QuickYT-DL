@@ -11,6 +11,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.JLabel;
 import javax.swing.JButton;
 import javax.swing.JProgressBar;
+import javax.swing.JScrollBar;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
@@ -19,6 +20,7 @@ import javax.swing.border.BevelBorder;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.JTextPane;
 
 public class Main extends JFrame {
 
@@ -31,6 +33,8 @@ public class Main extends JFrame {
 	private JButton btnGetInfo;
 	private JProgressBar prbDownload;
 	private JLabel lblProgress;
+	private JTextPane txtLogger;
+	private JScrollPane scrollPaneLogger;
 	
 	private YTDLJava ytdl;
 	
@@ -60,7 +64,7 @@ public class Main extends JFrame {
 		
 		//GUI initialization
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 800, 400);
+		setBounds(100, 100, 800, 530);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
@@ -107,14 +111,14 @@ public class Main extends JFrame {
 		btnGetInfo.setBounds(409, 34, 89, 23);
 		contentPane.add(btnGetInfo);
 		
-		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-		scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		scrollPane.setBounds(10, 66, 764, 220);
-		contentPane.add(scrollPane);
+		JScrollPane scrollPaneTable = new JScrollPane();
+		scrollPaneTable.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+		scrollPaneTable.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		scrollPaneTable.setBounds(10, 66, 764, 220);
+		contentPane.add(scrollPaneTable);
 		
 		tblFormats = new JTable();
-		scrollPane.setViewportView(tblFormats);
+		scrollPaneTable.setViewportView(tblFormats);
 		tblFormats.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 		tblFormats.setModel(new DefaultTableModel(
 			new Object[][] {
@@ -129,6 +133,15 @@ public class Main extends JFrame {
 		tblFormats.getColumnModel().getColumn(3).setPreferredWidth(361);
 		tblFormats.getColumnModel().getColumn(4).setPreferredWidth(62);
 		tblFormats.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		
+		scrollPaneLogger = new JScrollPane();
+		scrollPaneLogger.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+		scrollPaneLogger.setBounds(10, 360, 764, 119);
+		contentPane.add(scrollPaneLogger);
+		
+		txtLogger = new JTextPane();
+		scrollPaneLogger.setViewportView(txtLogger);
+		txtLogger.setEditable(false);
 		
 		/*
 		JLabel lblVideoTitle = new JLabel("Video: ");
@@ -162,6 +175,8 @@ public class Main extends JFrame {
 							
 							int percentDone = (int) (percent * 100);
 							prbDownload.setValue(percentDone);
+							
+							addLog(message);
 						}
 					});
 					System.out.println(message);
@@ -173,7 +188,7 @@ public class Main extends JFrame {
 				@Override
 				public void downloadFinished() {
 					guiDownloading(false);
-					lblProgress.setText(lblProgress.getText() + " - Download complete!");
+					addLog("Download Complete!");
 				}
 			};
 			ytdl.downloadVideo(txtURL.getText(), formatCode, callback);
@@ -181,7 +196,8 @@ public class Main extends JFrame {
 		} else{
 			//button is cancel download
 			ytdl.stopDownload();
-			lblProgress.setText(lblProgress.getText() + " - Download cancelled.");
+			lblProgress.setText(lblProgress.getText());
+			addLog("Download cancelled by user.");
 			guiDownloading(false);
 		}
 		
@@ -190,13 +206,16 @@ public class Main extends JFrame {
 	
 	private void guiDownloading(boolean enabled){
 		if (enabled){
+			//downloading
 			prbDownload.setValue(0);
 			btnDownload.setText("Cancel");
 			txtURL.setEnabled(false);
 			btnGetInfo.setEnabled(false);
 			tblFormats.setEnabled(false);
+			clearLogger();
 		}
 		else{
+			//go back to normal screen
 			btnDownload.setText("Download");
 			txtURL.setEnabled(true);
 			btnGetInfo.setEnabled(true);
@@ -235,5 +254,15 @@ public class Main extends JFrame {
 		for (int i = rowCount - 1; i >= 0; i--) {
 			model.removeRow(i);
 		}
+	}
+	
+	private void addLog(String message){
+		txtLogger.setText(txtLogger.getText() + "\n" + message);
+		JScrollBar vertical = scrollPaneLogger.getVerticalScrollBar();
+		vertical.setValue( vertical.getMaximum() );
+	}
+	
+	private void clearLogger(){
+		txtLogger.setText("");
 	}
 }

@@ -172,6 +172,7 @@ public class YTDLJava {
 	public void downloadVideo(final String url, final String formatcode, final DownloadCallback callback) {
 		
 		Thread downloadThread = new Thread(new Runnable() {
+			private float lastPercent;
 			@Override
 			public void run() {
 				try {
@@ -187,9 +188,11 @@ public class YTDLJava {
 						if (m.find()){
 							float percentDone = Float.parseFloat(m.group());
 							callback.downloadUpdate(line, percentDone);
+							lastPercent = percentDone;
 						}
 						else{
 							System.out.println(line);
+							callback.downloadUpdate(line, lastPercent);
 						}
 					}
 					
