@@ -18,16 +18,21 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.border.BevelBorder;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingUtilities;
 
 public class Main extends JFrame {
 
+	private static final long serialVersionUID = 3954782143417269586L;
+	
 	private JPanel contentPane;
 	private JTextField txtURL;
 	private JTable tblFormats;
 	private JButton btnDownload;
 	private JButton btnGetInfo;
+	private JProgressBar prbDownload;
+	private JLabel lblProgress;
 	
-	private YTDLWrapper ytdl;
+	private YTDLJava ytdl;
 	
 	/**
 	 * Launch the application.
@@ -49,7 +54,7 @@ public class Main extends JFrame {
 	 * Create the frame.
 	 */
 	public Main() {
-		ytdl = new YTDLWrapper();
+		ytdl = new YTDLJava();
 		
 		this.setTitle("QuickYT-DL (youtube-dl version: " + ytdl.getVersion() + ")" );
 		
@@ -84,12 +89,13 @@ public class Main extends JFrame {
 		btnDownload.setBounds(658, 322, 116, 28);
 		contentPane.add(btnDownload);
 		
-		JProgressBar prbDownload = new JProgressBar();
+		prbDownload = new JProgressBar();
+		prbDownload.setMaximum(10000);
 		prbDownload.setBounds(10, 322, 638, 28);
 		contentPane.add(prbDownload);
 		
-		JLabel lblProgress = new JLabel("Progress: ");
-		lblProgress.setBounds(10, 297, 141, 14);
+		lblProgress = new JLabel("Progress: ");
+		lblProgress.setBounds(10, 297, 638, 14);
 		contentPane.add(lblProgress);
 		
 		btnGetInfo = new JButton("Get Info");
@@ -145,12 +151,38 @@ public class Main extends JFrame {
 			}
 			
 			String formatCode = tblFormats.getValueAt(rowSelected, 0).toString();
-			
-			ytdl.downloadVideo(txtURL.getText(), formatCode);
+			YTDLJava.DownloadCallback callback = new YTDLJava.DownloadCallback() {
+				
+				@Override
+				public void downloadUpdate(final String message, final float percent) {
+					SwingUtilities.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							lblProgress.setText(message);
+							
+							int percentDone = (int) (percent * 100);
+							prbDownload.setValue(percentDone);
+						}
+					});
+					System.out.println(message);
+				}
+				
+				@Override
+				public void downloadStarted() {}
+				
+				@Override
+				public void downloadFinished() {
+					guiDownloading(false);
+					lblProgress.setText(lblProgress.getText() + " - Download complete!");
+				}
+			};
+			ytdl.downloadVideo(txtURL.getText(), formatCode, callback);
 			guiDownloading(true);
 		} else{
 			//button is cancel download
-			
+			ytdl.stopDownload();
+			lblProgress.setText(lblProgress.getText() + " - Download cancelled.");
+			guiDownloading(false);
 		}
 		
 		
@@ -158,6 +190,7 @@ public class Main extends JFrame {
 	
 	private void guiDownloading(boolean enabled){
 		if (enabled){
+			prbDownload.setValue(0);
 			btnDownload.setText("Cancel");
 			txtURL.setEnabled(false);
 			btnGetInfo.setEnabled(false);
@@ -182,7 +215,7 @@ public class Main extends JFrame {
 			return;
 		}
 		
-		List<YTDLWrapper.YTFormat> formats = ytdl.getFormats(url);
+		List<YTDLJava.YTFormat> formats = ytdl.getFormats(url);
 
 		//clear formats table
 		clearTable();
@@ -190,7 +223,7 @@ public class Main extends JFrame {
 		
 		//populate formats table
 		DefaultTableModel model = (DefaultTableModel) tblFormats.getModel();
-		for(YTDLWrapper.YTFormat f : formats){
+		for(YTDLJava.YTFormat f : formats){
 			model.addRow(new Object[]{f.formatCode, f.extension, f.resolution, f.note, f.fileSize});
 		}
 	}
