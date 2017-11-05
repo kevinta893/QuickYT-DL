@@ -1,4 +1,3 @@
-import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -8,17 +7,17 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.JLabel;
 import javax.swing.JButton;
 import javax.swing.JProgressBar;
-import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.border.LineBorder;
-import java.awt.Color;
+
 import javax.swing.border.BevelBorder;
 import javax.swing.JScrollPane;
+import javax.swing.ScrollPaneConstants;
 
 public class Main extends JFrame {
 
@@ -50,9 +49,11 @@ public class Main extends JFrame {
 	public Main() {
 		ytdl = new YTDLWrapper();
 		
+		this.setTitle("QuickYT-DL (youtube-dl version: " + ytdl.getVersion() + ")" );
+		
 		//GUI initialization
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 650, 400);
+		setBounds(100, 100, 800, 400);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
@@ -73,11 +74,16 @@ public class Main extends JFrame {
 		contentPane.add(lblYoutubeLink);
 		
 		JButton btnDownload = new JButton("Download");
-		btnDownload.setBounds(508, 322, 116, 28);
+		btnDownload.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				click_download();
+			}
+		});
+		btnDownload.setBounds(658, 322, 116, 28);
 		contentPane.add(btnDownload);
 		
 		JProgressBar prbDownload = new JProgressBar();
-		prbDownload.setBounds(10, 322, 488, 28);
+		prbDownload.setBounds(10, 322, 638, 28);
 		contentPane.add(prbDownload);
 		
 		JLabel lblProgress = new JLabel("Progress: ");
@@ -94,7 +100,9 @@ public class Main extends JFrame {
 		contentPane.add(btnGetInfo);
 		
 		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setBounds(10, 66, 614, 220);
+		scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+		scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		scrollPane.setBounds(10, 66, 764, 220);
 		contentPane.add(scrollPane);
 		
 		tblFormats = new JTable();
@@ -104,16 +112,41 @@ public class Main extends JFrame {
 			new Object[][] {
 			},
 			new String[] {
-				"Format Code", "Extension", "Resolution", "Description"
+				"Format Code", "Extension", "Resolution", "Description", "Size"
 			}
 		));
+		tblFormats.getColumnModel().getColumn(0).setPreferredWidth(70);
+		tblFormats.getColumnModel().getColumn(1).setPreferredWidth(60);
+		tblFormats.getColumnModel().getColumn(2).setPreferredWidth(68);
+		tblFormats.getColumnModel().getColumn(3).setPreferredWidth(361);
+		tblFormats.getColumnModel().getColumn(4).setPreferredWidth(62);
+		tblFormats.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		
+		/*
+		JLabel lblVideoTitle = new JLabel("Video: ");
+		lblVideoTitle.setBounds(10, 66, 614, 39);
+		Font titleFont = new Font("", Font.PLAIN, 15);
+		lblVideoTitle.setFont(new Font("Dialog", Font.PLAIN, 19));
+		contentPane.add(lblVideoTitle);
+		*/
 
 	}
 
+	private void click_download(){
+		int rowSelected = tblFormats.getSelectedRow();
+		if(rowSelected == -1){
+			//no row selected
+			showMessageBoxError("Select a download format first!");
+			return;
+		}
+		
+		int formatCode = Integer.parseInt(tblFormats.getValueAt(rowSelected, 0).toString());
+		
+		System.out.println(formatCode);
+	}
 	
 	private void guiDownloading(boolean b){
-
+		
 	}
 	
 	private void showMessageBoxError(String message){
@@ -135,7 +168,9 @@ public class Main extends JFrame {
 		
 		//populate formats table
 		DefaultTableModel model = (DefaultTableModel) tblFormats.getModel();
-		model.addRow(new Object[]{"Column 1", "Column 2", "Column 3", "column3"});
+		for(YTDLWrapper.YTFormat f : formats){
+			model.addRow(new Object[]{f.formatCode, f.extension, f.resolution, f.note, f.fileSize});
+		}
 	}
 	
 	private void clearTable(){
