@@ -58,7 +58,14 @@ public class Main extends JFrame {
 	 * Create the frame.
 	 */
 	public Main() {
-		ytdl = new YTDLJava();
+		
+		//try to find YTDL
+		try{
+			ytdl = new YTDLJava();
+		} catch (IllegalStateException e){
+			showMessageBoxError("Cannot find youtube-dl or youtube-dl.exe. Make sure the youtube-dl is installed, added to your PATH variable, or exists in the same folder as this program.\n\nSee youtube-dl at: https://github.com/rg3/youtube-dl");
+			System.exit(0);
+		}
 		
 		this.setTitle("QuickYT-DL (youtube-dl version: " + ytdl.getVersion() + ")" );
 		
