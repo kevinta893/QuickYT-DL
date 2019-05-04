@@ -109,6 +109,9 @@ public class YTDLJava {
 			Process fetchFormats = startYTDLProcess("-F", url);
 			List<String> formatResults = getProcessResults(fetchFormats);
 
+			// add default auto version option at the top
+			ret.add(YTFormat.AUTO_FORMAT);
+			
 			// take the output and convert to rows
 			for (String f : formatResults) {
 				System.out.println(f);
@@ -157,7 +160,7 @@ public class YTDLJava {
 					fileSize = "-";
 				}
 				// add format to list
-				ret.add(new YTFormat(Integer.parseInt(formatCode), extension, resolution, notes, fileSize));
+				ret.add(new YTFormat(formatCode, extension, resolution, notes, fileSize));
 
 			}
 			System.out.println(formatResults);
@@ -220,14 +223,16 @@ public class YTDLJava {
 	}
 	
 
-	public class YTFormat {
-		public int formatCode;
+	public static class YTFormat {
+		public String formatCode;
 		public String extension;
 		public String resolution;
 		public String note;
 		public String fileSize;
 
-		public YTFormat(int formatCode, String extension, String resolution, String note, String fileSize) {
+		public static final YTFormat AUTO_FORMAT = new YTFormat("best", "-", "-", "Auto-select best format", "-");
+		
+		public YTFormat(String formatCode, String extension, String resolution, String note, String fileSize) {
 			this.formatCode = formatCode;
 			this.extension = extension;
 			this.resolution = resolution;

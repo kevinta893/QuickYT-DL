@@ -1,6 +1,9 @@
+import java.awt.Desktop;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 import javax.swing.JFrame;
@@ -131,14 +134,16 @@ public class Main extends JFrame {
 			new Object[][] {
 			},
 			new String[] {
-				"Format Code", "Extension", "Resolution", "Description", "Size"
+				"#", "Format Code", "Extension", "Resolution", "Description", "Size"
 			}
 		));
-		tblFormats.getColumnModel().getColumn(0).setPreferredWidth(70);
-		tblFormats.getColumnModel().getColumn(1).setPreferredWidth(60);
-		tblFormats.getColumnModel().getColumn(2).setPreferredWidth(68);
-		tblFormats.getColumnModel().getColumn(3).setPreferredWidth(361);
-		tblFormats.getColumnModel().getColumn(4).setPreferredWidth(62);
+		tblFormats.getColumnModel().getColumn(0).setPreferredWidth(20);
+		tblFormats.getColumnModel().getColumn(0).setMinWidth(20);
+		tblFormats.getColumnModel().getColumn(1).setPreferredWidth(70);
+		tblFormats.getColumnModel().getColumn(2).setPreferredWidth(60);
+		tblFormats.getColumnModel().getColumn(3).setPreferredWidth(68);
+		tblFormats.getColumnModel().getColumn(4).setPreferredWidth(361);
+		tblFormats.getColumnModel().getColumn(5).setPreferredWidth(62);
 		tblFormats.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		
 		scrollPaneLogger = new JScrollPane();
@@ -149,6 +154,15 @@ public class Main extends JFrame {
 		txtLogger = new JTextPane();
 		scrollPaneLogger.setViewportView(txtLogger);
 		txtLogger.setEditable(false);
+		
+		JButton btnOpenDownloads = new JButton("Open Downloads Folder...");
+		btnOpenDownloads.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				openFolderInExplorer(System.getProperty("user.dir"));
+			}
+		});
+		btnOpenDownloads.setBounds(557, 33, 217, 23);
+		contentPane.add(btnOpenDownloads);
 		
 		/*
 		JLabel lblVideoTitle = new JLabel("Video: ");
@@ -170,7 +184,7 @@ public class Main extends JFrame {
 				return;
 			}
 			
-			String formatCode = tblFormats.getValueAt(rowSelected, 0).toString();
+			String formatCode = tblFormats.getValueAt(rowSelected, 1).toString();
 			YTDLJava.DownloadCallback callback = new YTDLJava.DownloadCallback() {
 				
 				@Override
@@ -230,6 +244,15 @@ public class Main extends JFrame {
 		}
 	}
 	
+	private void openFolderInExplorer(String path){
+		try {
+			Desktop.getDesktop().open(new File(path));
+		} catch (IOException e) {
+			JOptionPane.showMessageDialog(this, "Error! Cannot open downloads folder: \n" + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+			e.printStackTrace();
+		}
+	}
+	
 	private void showMessageBoxError(String message){
 		JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
 	}
@@ -249,8 +272,9 @@ public class Main extends JFrame {
 		
 		//populate formats table
 		DefaultTableModel model = (DefaultTableModel) tblFormats.getModel();
+		int rowCount = 0;
 		for(YTDLJava.YTFormat f : formats){
-			model.addRow(new Object[]{f.formatCode, f.extension, f.resolution, f.note, f.fileSize});
+			model.addRow(new Object[]{++rowCount, f.formatCode, f.extension, f.resolution, f.note, f.fileSize});
 		}
 	}
 	
